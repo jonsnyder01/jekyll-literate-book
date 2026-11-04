@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/jonsnyder01/jekyll-literate
-  revision: a84f9133cf1d26ac075f1dbba60fa3ffda94043e
+  revision: fae1dc4c436437ca19154e1066932c2602c0849c
   branch: main
   specs:
     jekyll-literate (0.1.0)

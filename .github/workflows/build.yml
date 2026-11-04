@@ -1,5 +1,7 @@
-# Tangles the book into the jekyll-literate gem (bin/dist), checks every file
-# it tangles against the published gem (bin/compare), and weaves the book.
+# Tangles the book into the jekyll-literate gem (bin/dist) and checks every
+# file it tangles against the published gem (bin/compare); weaves the book
+# with jekyll-literate's reusable workflow, which on main publishes it to
+# GitHub Pages.
 name: Build
 
 on:
@@ -13,13 +15,14 @@ permissions:
 
 concurrency:
   group: build-${{ github.ref }}
-  cancel-in-progress: true
+  # Let a deploy to Pages finish; a newer push to a PR replaces the older run.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   ENTANGLED_VERSION: "2.5.0"
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -48,5 +51,11 @@ jobs:
       - name: Compare with jekyll-literate
         run: bin/compare upstream
 
-      - name: Weave the book
-        run: bundle exec literate build
+  site:
+    uses: jonsnyder01/jekyll-literate/.github/workflows/book.yml@main
+    with:
+      github-pages: true
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

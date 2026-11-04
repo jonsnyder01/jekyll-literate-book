@@ -49,5 +49,6 @@ book, change it in jekyll-literate directly; once it is, change it only here.
 When nothing is left, the Gemfile switches to `path: "dist"`, so the book is woven by the gem
 it tangles, and a build on `main` pushes `dist/` to jekyll-literate.
 
-CI (`.github/workflows/build.yml`, every push and PR) runs `bin/dist`, `bin/compare` against
-jekyll-literate's `main` and `literate build`.
+CI (`.github/workflows/build.yml`, every push and PR) runs `bin/dist` and `bin/compare` against
+jekyll-literate's `main`, and weaves the book with jekyll-literate's reusable workflow, which on
+`main` publishes it to GitHub Pages: https://jonsnyder01.github.io/jekyll-literate-book/.
