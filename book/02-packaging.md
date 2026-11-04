@@ -121,10 +121,11 @@ sass:
 
 `literate` tangles first, because the source browser lists the tangled files,
 then hands over to Jekyll in the same Ruby, so that Bundler's choice of gems
-still holds.
+still holds. Its `mode` makes Entangled write it executable.
 
 ```ruby
 #| file: gem/exe/literate
+#| mode: "0755"
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 

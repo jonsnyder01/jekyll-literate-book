@@ -4,10 +4,9 @@
 # Assembles dist/, the jekyll-literate gem as published: the book tangled
 # naked (`entangled tangle -a naked`, without the annotations the source
 # browser needs) into gem/, plus gem-static/, the fonts, licences and prose
-# that are not tangled, which keep their modes. Entangled writes files
-# readable only by their owner and never executable, so each tangled file gets
-# the mode git should record for it: executable when it starts with a
-# shebang. `literate build` tangles gem/ again with annotations.
+# that are not tangled. Every file keeps its mode: a file fragment's `mode`
+# attribute (`mode: "0755"`) sets a tangled file's. `literate build` tangles
+# gem/ again with annotations.
 
 require "fileutils"
 require "json"
@@ -28,10 +27,7 @@ copy = lambda do |from, path|
   FileUtils.mkdir_p(File.dirname("dist/#{path}"))
   FileUtils.cp(from, "dist/#{path}", preserve: true)
 end
-tangled.each do |path|
-  copy.("gem/#{path}", path)
-  File.chmod(File.binread("dist/#{path}", 2) == "#!" ? 0o755 : 0o644, "dist/#{path}")
-end
+tangled.each { |path| copy.("gem/#{path}", path) }
 static.each { |path| copy.("gem-static/#{path}", path) }
 
 puts "dist: #{tangled.size} tangled and #{static.size} static files"
