@@ -13,6 +13,7 @@ gem-static/              the gem's files that are not tangled: fonts, licences, 
 dist/                    the gem as published: gem/ tangled naked, plus gem-static/ (gitignored)
 bin/dist                 tangles naked, then assembles dist/
 bin/compare              checks dist/ against a jekyll-literate checkout
+bin/weave-dist           weaves the book with dist/ (Gemfile.dist), into build/dist-site/
 _config.yml              this book's config (its source browser lists gem/)
 entangled.toml           Entangled configuration, with the Ruby, SCSS and HTML languages
 Gemfile                  the jekyll-literate that weaves this book
@@ -34,6 +35,7 @@ bundle config set --local path vendor/bundle && bundle install   # first time
 
 bin/dist                          # tangle naked, then assemble dist/
 bin/compare ../jekyll-literate    # check dist/ against a jekyll-literate checkout
+bin/weave-dist ../jekyll-literate # weave with dist/ laid over a jekyll-literate checkout
 bundle exec literate serve        # tangle annotated, then weave and preview at http://localhost:4000
 bundle exec literate build        # tangle annotated, then weave into build/site/
 ```
@@ -46,14 +48,18 @@ then it is woven by the published jekyll-literate (the Gemfile's `git:` source),
 one byte for byte, and the rest are listed as not in the book yet. While a file is not in the
 book, change it in jekyll-literate directly; once it is, change it only here.
 
-When nothing is left, the Gemfile switches to `path: "dist"`, so the book is woven by the gem
-it tangles (the Book workflow then runs `bin/dist` first), and the Source workflow on `main`
-pushes `dist/` to jekyll-literate.
+The Source workflow already weaves the book with the gem it tangles (`bin/weave-dist`), with
+`dist/` laid over the published gem for the files not in the book yet; the weave succeeds or
+the change is not published. When nothing is left, `bin/weave-dist` runs with no checkout
+under `dist/`, the Gemfile switches to `path: "dist"` (so the Book workflow runs `bin/dist`
+first), and the Source workflow on `main` pushes `dist/` to jekyll-literate after weaving with
+it.
 
 ## CI
 
 - **Source** (`.github/workflows/source.yml`, changes to the book, `gem-static/`, `bin/` or
-  `entangled.toml`): `bin/dist`, then `bin/compare` against jekyll-literate's `main`.
+  the configs): `bin/dist`, `bin/compare` against jekyll-literate's `main`, then
+  `bin/weave-dist`.
 - **Book** (`.github/workflows/book.yml`, changes to the book or its config): weaves the book
   with jekyll-literate's reusable workflow, which on `main` publishes it to GitHub Pages:
   https://jonsnyder01.github.io/jekyll-literate-book/.

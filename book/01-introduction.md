@@ -26,8 +26,9 @@ builds.
 While the book is being written it is woven by the published jekyll-literate,
 and `bin/compare` checks `dist/` against it: every file the book tangles must
 match the published one byte for byte, and the rest are listed as not in the
-book yet. Once none are left, the book is woven by `dist/` instead: by the gem
-it publishes.
+book yet. Before anything is published the book is also woven by `dist/`,
+laid over the published gem until the book tangles all of it, so that a change
+that breaks the weave never reaches jekyll-literate.
 
 ## Reading the code
 

@@ -1,0 +1,5 @@
+source "https://rubygems.org"
+
+# The gem this book tangles, as bin/weave-dist assembles it, for the Source
+# workflow to weave the book with before it would publish it.
+gem "jekyll-literate", path: "build/gem", group: :jekyll_plugins

@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Weaves the book with the gem it tangles, as the Source workflow does before
+# it would publish dist/, so that a change that breaks the weave never reaches
+# jekyll-literate. Run bin/dist first. The gem is assembled in build/gem: while
+# the book does not yet tangle every file of the gem, dist/ is laid over a
+# checkout of the published gem. Gemfile.dist names it; the site goes to
+# build/dist-site.
+#   bin/weave-dist ../jekyll-literate
+
+require "fileutils"
+
+Dir.chdir(File.expand_path("..", __dir__))
+abort "weave-dist: no dist/; run bin/dist first" unless Dir.exist?("dist")
+
+FileUtils.rm_rf("build/gem")
+FileUtils.mkdir_p("build/gem")
+if (upstream = ARGV[0])
+  Dir.children(upstream).reject { |name| name == ".git" }.each do |name|
+    FileUtils.cp_r(File.join(upstream, name), "build/gem", preserve: true)
+  end
+end
+FileUtils.cp_r("dist/.", "build/gem", preserve: true)
+
+ENV["BUNDLE_GEMFILE"] = File.expand_path("Gemfile.dist")
+system("bundle", "install", "--quiet") or abort "weave-dist: `bundle install` failed"
+exec "bundle", "exec", "literate", "build", "--destination", "build/dist-site"

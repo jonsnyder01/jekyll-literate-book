@@ -13,3 +13,5 @@
 /vendor/
 /.bundle/
 .DS_Store
+# bin/weave-dist resolves Gemfile.dist afresh against the gem it assembles
+/Gemfile.dist.lock

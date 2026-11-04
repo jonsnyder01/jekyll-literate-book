@@ -1,14 +1,16 @@
 # Tangles the book naked into the jekyll-literate gem (bin/dist: no
-# annotations, which only the book's source browser needs) and checks every
-# file it tangles against the published gem (bin/compare).
+# annotations, which only the book's source browser needs), checks every file
+# it tangles against the published gem (bin/compare), and weaves the book with
+# that gem (bin/weave-dist), so that a change that breaks the weave never
+# gets published.
 name: Source
 
 on:
   push:
     branches: [main]
-    paths: ["book/**", "gem-static/**", "bin/**", "entangled.toml", ".github/workflows/source.yml"]
+    paths: ["book/**", "gem-static/**", "bin/**", "entangled.toml", "_config.yml", "Gemfile.dist", ".github/workflows/source.yml"]
   pull_request:
-    paths: ["book/**", "gem-static/**", "bin/**", "entangled.toml", ".github/workflows/source.yml"]
+    paths: ["book/**", "gem-static/**", "bin/**", "entangled.toml", "_config.yml", "Gemfile.dist", ".github/workflows/source.yml"]
   workflow_dispatch:
 
 permissions:
@@ -33,7 +35,7 @@ jobs:
           repository: jonsnyder01/jekyll-literate
           path: upstream
 
-      # bin/dist and bin/compare are plain Ruby: no gems needed.
+      # bin/weave-dist installs the gems for the gem it assembles.
       - uses: ruby/setup-ruby@v1
 
       - uses: astral-sh/setup-uv@v10.3.3
@@ -49,3 +51,7 @@ jobs:
 
       - name: Compare with jekyll-literate
         run: bin/compare upstream
+
+      # Until the book tangles every file, dist/ is laid over the published gem.
+      - name: Weave the book with dist/
+        run: bin/weave-dist upstream
