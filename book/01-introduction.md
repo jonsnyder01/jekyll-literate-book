@@ -12,21 +12,22 @@ records) are kept as they are.
 
 ## How this book becomes the gem
 
-Entangled tangles the book into `gem/`, with annotations: comment lines that
-record which fragment wrote each line. This book's source browser is built from
-them, so every listing links back to its fragments. The gem as published must
-not carry them, though: in a layout they would be HTML comments in every page
-built with the theme, and above a layout's front matter they would hide it from
-Jekyll. So `bin/dist` strips them, giving the files exactly as `entangled tangle
--a naked` would write them, and adds the files that are not tangled to make
-`dist/`. A build on `main` will push `dist/` to the jekyll-literate repository,
-which holds only what this book builds.
+The book is tangled two ways. To be woven, it is tangled into `gem/` with
+annotations: comment lines that record which fragment wrote each line. This
+book's source browser is built from them, so every listing links back to its
+fragments. The gem as published must not carry them, though: in a layout they
+would be HTML comments in every page built with the theme, and above a layout's
+front matter they would hide it from Jekyll. So to make the gem, `bin/dist`
+tangles the book naked (`entangled tangle -a naked`), without annotations, and
+adds the files that are not tangled to make `dist/`. A build on `main` will push
+`dist/` to the jekyll-literate repository, which holds only what this book
+builds.
 
 While the book is being written it is woven by the published jekyll-literate,
 and `bin/compare` checks `dist/` against it: every file the book tangles must
 match the published one byte for byte, and the rest are listed as not in the
-book yet. Once none are left, the book is woven by `dist/` instead, so that a
-change that breaks the weave fails the build that would publish it.
+book yet. Once none are left, the book is woven by `dist/` instead: by the gem
+it publishes.
 
 ## Reading the code
 

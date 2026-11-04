@@ -1,0 +1,30 @@
+# Weaves the book, tangled with annotations for its source browser, with
+# jekyll-literate's reusable workflow, which on main publishes it to GitHub
+# Pages.
+name: Book
+
+on:
+  push:
+    branches: [main]
+    paths: ["book/**", "_config.yml", "Gemfile", "Gemfile.lock", ".ruby-version", "entangled.toml", ".github/workflows/book.yml"]
+  pull_request:
+    paths: ["book/**", "_config.yml", "Gemfile", "Gemfile.lock", ".ruby-version", "entangled.toml", ".github/workflows/book.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: book-${{ github.ref }}
+  # Let a deploy to Pages finish; a newer push to a PR replaces the older run.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  site:
+    uses: jonsnyder01/jekyll-literate/.github/workflows/book.yml@main
+    with:
+      github-pages: true
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

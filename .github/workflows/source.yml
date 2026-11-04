@@ -1,28 +1,28 @@
-# Tangles the book into the jekyll-literate gem (bin/dist) and checks every
-# file it tangles against the published gem (bin/compare); weaves the book
-# with jekyll-literate's reusable workflow, which on main publishes it to
-# GitHub Pages.
-name: Build
+# Tangles the book naked into the jekyll-literate gem (bin/dist: no
+# annotations, which only the book's source browser needs) and checks every
+# file it tangles against the published gem (bin/compare).
+name: Source
 
 on:
   push:
     branches: [main]
+    paths: ["book/**", "gem-static/**", "bin/**", "entangled.toml", ".github/workflows/source.yml"]
   pull_request:
+    paths: ["book/**", "gem-static/**", "bin/**", "entangled.toml", ".github/workflows/source.yml"]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: build-${{ github.ref }}
-  # Let a deploy to Pages finish; a newer push to a PR replaces the older run.
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: source-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   ENTANGLED_VERSION: "2.5.0"
 
 jobs:
-  check:
+  gem:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -33,9 +33,8 @@ jobs:
           repository: jonsnyder01/jekyll-literate
           path: upstream
 
+      # bin/dist and bin/compare are plain Ruby: no gems needed.
       - uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
 
       - uses: astral-sh/setup-uv@v10.3.3
         with:
@@ -45,17 +44,8 @@ jobs:
       - name: Install Entangled
         run: uv tool install "entangled-cli==${ENTANGLED_VERSION}"
 
-      - name: Assemble dist/
+      - name: Tangle the gem into dist/
         run: bin/dist
 
       - name: Compare with jekyll-literate
         run: bin/compare upstream
-
-  site:
-    uses: jonsnyder01/jekyll-literate/.github/workflows/book.yml@main
-    with:
-      github-pages: true
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
