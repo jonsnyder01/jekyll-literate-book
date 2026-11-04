@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Assembles dist/, the jekyll-literate gem as published: every file Entangled
+# tangles into gem/, with its annotations removed (as `entangled tangle -a
+# naked` would write it), plus gem-static/, the fonts, licences and prose that
+# are not tangled. Tangles first. A file that starts with a shebang is made
+# executable, as git records it.
+
+require "fileutils"
+require "json"
+
+# Entangled's annotations in any comment style, as its own reader matches them.
+BEGIN_MARK = %r{\A\s*\S.*? ~/~ begin <<[^#<>]+#[^#<>]+>>\[(?:init|\d+)\]}
+END_MARK = %r{\A\s*\S.*? ~/~ end\b}
+
+Dir.chdir(File.expand_path("..", __dir__))
+system("entangled", "tangle") or abort "dist: `entangled tangle` failed"
+targets = JSON.parse(File.read(".entangled/filedb.json")).fetch("targets")
+
+FileUtils.rm_rf("dist")
+tangled = targets.select { |path| path.start_with?("gem/") }.sort.map do |path|
+  published = path.delete_prefix("gem/")
+  text = File.read(path).lines.reject { |line| line.match?(BEGIN_MARK) || line.match?(END_MARK) }.join
+  out = File.join("dist", published)
+  FileUtils.mkdir_p(File.dirname(out))
+  File.write(out, text)
+  File.chmod(0o755, out) if text.start_with?("#!")
+  published
+end
+abort "dist: tangled outside gem/: #{(targets - targets.grep(%r{\Agem/})).join(", ")}" if tangled.size < targets.size
+
+static = Dir.glob("**/*", File::FNM_DOTMATCH, base: "gem-static").select { |p| File.file?("gem-static/#{p}") }
+clash = static & tangled
+abort "dist: both tangled and in gem-static/: #{clash.join(", ")}" unless clash.empty?
+static.each do |path|
+  FileUtils.mkdir_p(File.dirname("dist/#{path}"))
+  FileUtils.cp("gem-static/#{path}", "dist/#{path}", preserve: true)
+end
+
+puts "dist: #{tangled.size} tangled and #{static.size} static files"

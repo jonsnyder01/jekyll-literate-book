@@ -1,0 +1,25 @@
+# Entangled configuration: the book source in book/ tangles the jekyll-literate
+# gem into gem/ (gitignored), with annotations, for this book's source browser;
+# bin/dist strips them to make the gem as published.
+version = "2.5"
+style = "basic"
+watch_list = ["book/**/*.md"]
+# style = "basic" also enables the repl and brei hooks; we only need
+# quarto_attributes (the #| lines), shebang and spdx_license.
+hooks = ["~repl", "~brei"]
+
+[[languages]]
+name = "Ruby"
+identifiers = ["ruby"]
+comment = { open = "#" }
+
+[[languages]]
+name = "SCSS"
+identifiers = ["scss"]
+comment = { open = "//" }
+
+# Layouts and includes are HTML with Liquid in it.
+[[languages]]
+name = "HTML"
+identifiers = ["html"]
+comment = { open = "<!--", close = "-->" }

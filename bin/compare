@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Compares dist/ (see bin/dist) with a checkout of jekyll-literate. Every file
+# in dist/ must match its counterpart byte for byte, executable bit included,
+# and exist there; files only in the checkout are not in the book yet, and
+# listing them shows how far the book has come. Exits non-zero on a mismatch.
+#   bin/compare ../jekyll-literate
+
+upstream = ARGV.fetch(0) { abort "usage: bin/compare <jekyll-literate checkout>" }
+Dir.chdir(File.expand_path("..", __dir__))
+
+files = lambda do |dir|
+  Dir.glob("**/*", File::FNM_DOTMATCH, base: dir)
+     .reject { |path| path == ".git" || path.start_with?(".git/") }
+     .select { |path| File.file?(File.join(dir, path)) }.sort
+end
+built = files.("dist")
+published = files.(upstream)
+
+same = ->(path) { File.binread("dist/#{path}") == File.binread("#{upstream}/#{path}") &&
+                  File.executable?("dist/#{path}") == File.executable?("#{upstream}/#{path}") }
+extra = built - published
+differ = (built & published).reject(&same)
+missing = published - built
+
+puts "compare: #{built.size - extra.size - differ.size} of #{published.size} files reproduced"
+missing.each { |path| puts "  not in the book yet: #{path}" }
+differ.each { |path| puts "  DIFFERS: #{path}" }
+extra.each { |path| puts "  NOT IN jekyll-literate: #{path}" }
+exit(differ.empty? && extra.empty? ? 0 : 1)

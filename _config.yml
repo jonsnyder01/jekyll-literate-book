@@ -1,0 +1,12 @@
+# Woven by jekyll-literate (see Gemfile): `bundle exec literate build` tangles,
+# then runs Jekyll with this config from the repository root.
+title: jekyll-literate
+subtitle: The literate program of a literate programming tool
+description: The jekyll-literate gem, written as a literate program and woven by itself.
+
+theme: jekyll-literate
+source: book
+destination: build/site
+
+literate:
+  tangle_dir: gem

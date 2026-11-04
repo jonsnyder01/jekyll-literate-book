@@ -1,0 +1,15 @@
+# Tangled by `entangled tangle` from book/**/*.md, with annotations
+/gem/
+/.entangled/
+# Assembled by bin/dist: the gem as published
+/dist/
+# A jekyll-literate checkout for bin/compare (CI)
+/upstream/
+# The built site
+/build/
+# Jekyll
+.jekyll-cache/
+.sass-cache/
+/vendor/
+/.bundle/
+.DS_Store

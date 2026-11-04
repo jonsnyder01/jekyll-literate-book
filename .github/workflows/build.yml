@@ -1,0 +1,52 @@
+# Tangles the book into the jekyll-literate gem (bin/dist), checks every file
+# it tangles against the published gem (bin/compare), and weaves the book.
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ENTANGLED_VERSION: "2.5.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # The published gem, for bin/compare.
+      - uses: actions/checkout@v7
+        with:
+          repository: jonsnyder01/jekyll-literate
+          path: upstream
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          # Only one pinned tool is installed; there is no lockfile to cache by.
+          enable-cache: false
+
+      - name: Install Entangled
+        run: uv tool install "entangled-cli==${ENTANGLED_VERSION}"
+
+      - name: Assemble dist/
+        run: bin/dist
+
+      - name: Compare with jekyll-literate
+        run: bin/compare upstream
+
+      - name: Weave the book
+        run: bundle exec literate build
